@@ -169,4 +169,194 @@ first_name, last_name = last_name, first_name
 assert_equal "Rob", first_name
 assert_equal "Roy", last_name
   ```
+  
+## About HASHES
 
+```ruby
+empty_hash = Hash.new
+assert_equal Hash, empty_hash.class
+assert_equal({}, empty_hash)
+assert_equal 0, empty_hash.size
+hash = { :one => "uno", :two => "dos" }
+assert_equal 2, hash.size
+# returns nil on noexistent elements
+hash = { :one => "uno", :two => "dos" }
+assert_equal "uno", hash[:one]
+assert_equal "dos", hash[:two]
+assert_equal nil, hash[:doesnt_exist]
+# raises keyError when you try to fetch an nonexisten element
+hash = { :one => "uno" }
+assert_equal "uno", hash.fetch(:one)
+assert_raise(KeyError) do
+  hash.fetch(:doesnt_exist)
+end
+hash = { :one => "uno", :two => "dos" }
+hash[:one] = "eins"
+expected = { :one => "eins", :two => "dos" }
+assert_equal expected, hash
+# A hash has no order
+hash1 = { :one => "uno", :two => "dos" }
+hash2 = { :two => "dos", :one => "uno" }
+assert_equal true, hash1 == hash2
+hash = { :one => "uno", :two => "dos" }
+assert_equal 2, hash.keys.size
+assert_equal true, hash.keys.include?(:one)
+assert_equal true, hash.keys.include?(:two)
+assert_equal Array, hash.keys.class
+hash = { :one => "uno", :two => "dos" }
+assert_equal 2, hash.values.size
+assert_equal true, hash.values.include?("uno")
+assert_equal true, hash.values.include?("dos")
+assert_equal Array, hash.values.class
+# Merge adds and overrides
+hash = { "jim" => 53, "amy" => 20, "dan" => 23 }
+new_hash = hash.merge({ "jim" => 54, "jenny" => 26 })
+assert_equal true, hash != new_hash
+expected = { "jim" => 54, "amy" => 20, "dan" => 23, "jenny" => 26 }
+assert_equal true, expected == new_hash
+# Returns nil on nonexistent elements, as I said before.
+hash1 = Hash.new
+hash1[:one] = 1
+assert_equal 1, hash1[:one]
+assert_equal nil, hash1[:two]
+# Returns object declared in instantiation on nonexistent elements.
+hash2 = Hash.new("dos")
+hash2[:one] = 1
+assert_equal 1, hash2[:one]
+assert_equal "dos", hash2[:two]
+# That objects remains the same and is possible to alter it.
+hash = Hash.new([])
+hash[:one] << "uno"
+hash[:two] << "dos"
+assert_equal ["uno", "dos"], hash[:one]
+assert_equal ["uno", "dos"], hash[:two]
+assert_equal ["uno", "dos"], hash[:three]
+assert_equal true, hash[:one].object_id == hash[:two].object_id
+# A block gives you a new object everytime a nonexistent key is called
+hash = Hash.new {|hash, key| hash[key] = [] }
+hash[:one] << "uno"
+hash[:two] << "dos"
+assert_equal ["uno"], hash[:one]
+assert_equal ["dos"], hash[:two]
+assert_equal [], hash[:three]
+```
+
+## About STRINGS
+
+```ruby
+#double quoated literals are strings
+string = "Hello, World"
+assert_equal true, string.is_a?(String)
+# single quote literals are strings
+string = 'Goodbye, World'
+assert_equal true, string.is_a?(String)
+
+# single quote strings can use double-quotes inside.
+string = 'He said, "Go Away."'
+assert_equal "He said, \"Go Away.\"", string
+
+# double quote strings can use single-quotes inside
+string = "Don't"
+assert_equal 'Don\'t', string
+# You can also always escape them when neccesary
+a = "He said, \"Don't\""
+b = 'He said, "Don\'t"'
+assert_equal true, a == b
+#FLexible quotes help with hard-cases
+a = %(flexible quotes can handle both ' and " characters)
+b = %!flexible quotes can handle both ' and " characters!
+c = %{flexible quotes can handle both ' and " characters}
+assert_equal true, a == b
+assert_equal true, a == c
+# Flexible quotes also handle multiple-line strings
+long_string = %{
+It was the best of times,
+It was the worst of times.
+}
+#The problem is it adds an unncesary linebreak at the beginning
+assert_equal 54, long_string.length
+assert_equal 3, long_string.lines.count
+assert_equal "\n", long_string[0,1]
+# EOS to the resque. It doesnt add the initial linebreak
+long_string = <<EOS
+It was the best of times,
+It was the worst of times.
+EOS
+assert_equal 53, long_string.length
+assert_equal 2, long_string.lines.count
+assert_equal "I", long_string[0,1]
+
+# Plus concatenates a string
+string = "Hello, " + "World"
+assert_equal "Hello, World", string
+
+# Plus sign concat doesn't modify the oriignal
+hi = "Hello, "
+there = "World"
+string = hi + there
+assert_equal "Hello, ", hi
+assert_equal "World", there
+hi = "Hello, "
+there = "World"
+hi += there
+assert_equal "Hello, World", hi
+original_string = "Hello, "
+hi = original_string
+there = "World"
+hi += there
+assert_equal "Hello, ", original_string
+# The shovel operator is the only one that alters the original string in memory
+hi = "Hello, "
+there = "World"
+hi << there
+assert_equal "Hello, World", hi
+assert_equal "World", there
+original_string = "Hello, "
+hi = original_string
+there = "World"
+hi << there
+assert_equal hi, original_string
+string = "\n"
+assert_equal 1, string.size
+# Single quotes dont escape characters
+string = '\n'
+assert_equal 2, string.size
+# Well, sometimes?, apparently it escapes the single-quote
+string = '\\\''
+assert_equal 2, string.size
+assert_equal "\\'", string
+# Use #{var} to interpolate a string
+value = 123
+string = "The value is #{value}"
+assert_equal "The value is 123", string
+# Single-quote strings can't handle interpolation
+value = 123
+string = 'The value is #{value}'
+assert_equal "The value is \#{value}", string
+string = "The square root of 5 is #{Math.sqrt(5)}"
+assert_equal "The square root of 5 is " << Math.sqrt(5).to_s, string
+# Substring slicing. 
+string = "Bacon, lettuce and tomato"
+assert_equal "let", string[7,3]
+assert_equal "let", string[7..9]
+
+string = "Bacon, lettuce and tomato"
+assert_equal "a", string[1]
+
+# split a string using whitespace as a default delimiter
+string = "Sausage Egg Cheese"
+words = string.split
+assert_equal ["Sausage", "Egg", "Cheese"], words
+# split also accepts a different delimiter
+string = "the:rain:in:spain"
+words = string.split(/:/)
+assert_equal ["the", "rain", "in", "spain"], words
+# join them :)
+words = ["Now", "is", "the", "time"]
+assert_equal "Now is the time", words.join(" ")
+# strings are unique objects even if they say the same
+a = "a string"
+b = "a string"
+assert_equal true, a           == b
+assert_equal false, a.object_id == b.object_id
+```
