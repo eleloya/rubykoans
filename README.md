@@ -134,3 +134,39 @@ shifted_value = array.shift
 assert_equal :first, shifted_value
 assert_equal [1,2], array
 ```
+
+## About ARRAY ASSIGNMENTS
+```ruby
+names = ["John", "Smith"]
+assert_equal ["John", "Smith"], names
+# It assigns them  in left-to-right order
+first_name, last_name = ["John", "Smith"]
+assert_equal "John", first_name
+assert_equal "Smith", last_name
+# Ignores extra elements
+first_name, last_name = ["John", "Smith", "III"]
+assert_equal "John", first_name
+assert_equal "Smith", last_name
+# The splat operator slurps all reaming elements
+first_name, *last_name = ["John", "Smith", "III"]
+assert_equal "John", first_name
+assert_equal ["Smith","III"], last_name
+# Out of bounds array assignments results in a nil assignment
+first_name, last_name = ["Cher"]
+assert_equal "Cher", first_name
+assert_equal nil, last_name
+# Not surprised
+first_name, last_name = [["Willie", "Rae"], "Johnson"]
+assert_equal ["Willie", "Rae"], first_name
+assert_equal "Johnson", last_name
+# Its like using an anymous variable
+first_name, = ["John", "Smith"]
+assert_equal "John", first_name
+# Simple swap using multiple assignments
+first_name = "Roy"
+last_name = "Rob"
+first_name, last_name = last_name, first_name
+assert_equal "Rob", first_name
+assert_equal "Roy", last_name
+  ```
+
